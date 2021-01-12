@@ -40,7 +40,6 @@ class ResNet18(nn.Module):
         self.layer2 = self._create_block_(64,128, 2)
         self.layer3 = self._create_block_(128, 256, 2)
         self.layer4 = self._create_block_(256, 512, 2)
-        self.pool = nn.AvgPool2d(4, stride = None)
         self.fc = nn.Linear(512, num_classes)
 
     def _create_block_(self, in_channels, out_channels, stride):
@@ -48,3 +47,17 @@ class ResNet18(nn.Module):
             ResidualBlock(in_channels = in_channels, out_channels = out_channels, stride = 2),
             ResidualBlock(in_channels = out_channels, out_channels = out_channels, stride=1)
         )
+
+    def forward(self, x):
+        x = self.bn1(self.conv1(x))
+        x = nn.ReLu(x)
+        x = self.maxpool1(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        x = nn.AvgPool2d(4)(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+
+        return x 
